@@ -1,24 +1,29 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 using SuperShopCet97.Web.Data;
 using SuperShopCet97.Web.Data.Entities;
+using SuperShopCet97.Web.Helpers;
 
 namespace SuperShopCet97.Web.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly IProductRepository _productRepository;
+        private readonly IUserHelper _userHelper;
 
-        public ProductsController(IProductRepository productRepository)
+        public ProductsController(IProductRepository productRepository, IUserHelper userHelper)
         {
             _productRepository = productRepository;
+            _userHelper = userHelper;
         }
 
         // GET: Products
         public IActionResult Index()
-        {
-            return View(_productRepository.GetAll());
+        { 
+            return View(_productRepository.GetAll().OrderBy(p => p.Name));
         }
 
         // GET: Products/Details/5
@@ -53,6 +58,8 @@ namespace SuperShopCet97.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                //TODO: Modificar para o user que tiver logado
+                product.User = await _userHelper.GetUserByEmailAsync("luispatricio.info@gmail.com");
                 await _productRepository.CreateAsync(product);
                 return RedirectToAction(nameof(Index));
             }
@@ -91,6 +98,8 @@ namespace SuperShopCet97.Web.Controllers
             {
                 try
                 {
+                    //TODO: Modificar para o user que tiver logado
+                    product.User = await _userHelper.GetUserByEmailAsync("luispatricio.info@gmail.com");
                     await _productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
