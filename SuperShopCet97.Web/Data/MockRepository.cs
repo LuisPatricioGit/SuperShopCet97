@@ -4,6 +4,9 @@ using SuperShopCet97.Web.Data.Entities;
 
 namespace SuperShopCet97.Web.Data
 {
+    /// <summary>
+    /// DISCONTINUED CODE: Left for Learning Purposes
+    /// </summary>
     public class MockRepository : IRepository
     {
         public void AddProduct(Product product)

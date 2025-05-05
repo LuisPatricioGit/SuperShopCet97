@@ -5,6 +5,9 @@ using SuperShopCet97.Web.Data.Entities;
 
 namespace SuperShopCet97.Web.Data
 {
+    /// <summary>
+    /// DISCONTINUED CODE: Left for Learning Purposes
+    /// </summary>
     public class Repository : IRepository
     {
         private readonly DataContext _context;
