@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SuperShopCet97.Web.Data;
 
 namespace SuperShopCet97.Web.Controllers.API
@@ -16,9 +15,9 @@ namespace SuperShopCet97.Web.Controllers.API
         }
 
         [HttpGet]
-        public IActionResult GetProducts() 
+        public IActionResult GetProducts()
         {
-            return Ok(_productRepository.GetAll());
+            return Ok(_productRepository.GetAllWithUsers());
         }
     }
 }
