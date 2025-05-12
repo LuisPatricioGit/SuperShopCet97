@@ -42,13 +42,14 @@ namespace SuperShopCet97.Web
 
             services.AddDbContext<DataContext>(o =>
             {
-                o.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"));
+                o.UseSqlServer(this.Configuration.GetConnectionString("OnlineConnection"));
             });
 
             services.AddTransient<SeedDb>();
             services.AddScoped<IUserHelper, UserHelper>();
-            services.AddScoped<IImageHelper, ImageHelper>();
+            services.AddScoped<IBlobHelper, BlobHelper>();
             services.AddScoped<IConverterHelper, ConverterHelper>();
+
 
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddControllersWithViews();

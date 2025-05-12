@@ -1,12 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SQLitePCL;
 using SuperShopCet97.Web.Data;
-using SuperShopCet97.Web.Data.Entities;
 using SuperShopCet97.Web.Helpers;
 using SuperShopCet97.Web.Models;
 
@@ -16,24 +13,24 @@ namespace SuperShopCet97.Web.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly IUserHelper _userHelper;
-        private readonly IImageHelper _imageHelper;
+        private readonly IBlobHelper _blobHelper;
         private readonly IConverterHelper _converterHelper;
 
         public ProductsController(
-            IProductRepository productRepository, 
-            IUserHelper userHelper, 
-            IImageHelper imageHelper,
+            IProductRepository productRepository,
+            IUserHelper userHelper,
+            IBlobHelper blobHelper,
             IConverterHelper converterHelper)
         {
             _productRepository = productRepository;
             _userHelper = userHelper;
-            _imageHelper = imageHelper;
+            _blobHelper = blobHelper;
             _converterHelper = converterHelper;
         }
 
         // GET: Products
         public IActionResult Index()
-        { 
+        {
             return View(_productRepository.GetAll().OrderBy(p => p.Name));
         }
 
@@ -69,14 +66,14 @@ namespace SuperShopCet97.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var path = string.Empty;
+                Guid imageId = Guid.Empty;
 
                 if (model.ImageFile != null && model.ImageFile.Length > 0)
                 {
-                    path = await _imageHelper.UploadImageAsync(model.ImageFile,"products");
+                    imageId = await _blobHelper.UploadBlobAsync(model.ImageFile,"products");
                 }
 
-                var product = _converterHelper.ToProduct(model, path, true);
+                var product = _converterHelper.ToProduct(model, imageId, true);
 
                 //TODO: Modificar para o user que tiver logado
                 product.User = await _userHelper.GetUserByEmailAsync("luispatricio.info@gmail.com");
@@ -115,14 +112,14 @@ namespace SuperShopCet97.Web.Controllers
             {
                 try
                 {
-                    var path = model.ImageUrl;
+                    Guid imageId = model.ImageId;
 
                     if (model.ImageFile != null && model.ImageFile.Length > 0)
                     {
-                        path = await _imageHelper.UploadImageAsync(model.ImageFile, "products");
+                        imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
                     }
 
-                    var product = _converterHelper.ToProduct(model, path, false);
+                    var product = _converterHelper.ToProduct(model, imageId, false);
 
                     //TODO: Modificar para o user que tiver logado
                     product.User = await _userHelper.GetUserByEmailAsync("luispatricio.info@gmail.com");
@@ -130,7 +127,7 @@ namespace SuperShopCet97.Web.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (! await _productRepository.ExistAsync(model.Id))
+                    if (!await _productRepository.ExistAsync(model.Id))
                     {
                         return NotFound();
                     }

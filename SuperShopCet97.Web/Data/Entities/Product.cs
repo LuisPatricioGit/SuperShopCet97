@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SuperShopCet97.Web.Data.Entities
 {
@@ -16,7 +17,7 @@ namespace SuperShopCet97.Web.Data.Entities
         public decimal Price { get; set; }
 
         [Display(Name = "Image")]
-        public string ImageUrl { get; set; }
+        public Guid ImageId { get; set; }
 
         [Display(Name = "Last Purchase")]
         public DateTime? LastPurchase { get; set; }
@@ -32,17 +33,8 @@ namespace SuperShopCet97.Web.Data.Entities
 
         public User User { get; set; }
 
-        public string ImageFullPath
-        {
-            get 
-            {
-                if ( string.IsNullOrEmpty(ImageUrl))
-                {
-                    return null;
-                }   
-
-                return $"https://localhost:44312{ImageUrl.Substring(1)}"; 
-            }
-        }
+        public string ImageFullPath => ImageId == Guid.Empty
+            ? $"https://supershopcet-bwe4fag9geawcec7.westeurope-01.azurewebsites.net/images/noimage.png"
+            : $"https://supershopcet.blob.core.windows.net/products/{ImageId}";
     }
 }
