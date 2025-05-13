@@ -72,6 +72,7 @@ namespace SuperShopCet97.Web.Controllers
                         UserName = model.Username,
                     };
 
+                    await _userHelper.AddUserToRoleAsync(user, "Customer");
                     var result = await _userHelper.AddUserAsync(user, model.Password);
 
                     if (result != IdentityResult.Success) 
