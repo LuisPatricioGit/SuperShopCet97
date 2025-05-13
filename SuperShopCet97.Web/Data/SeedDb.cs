@@ -24,6 +24,9 @@ namespace SuperShopCet97.Web.Data
         {
             await _context.Database.EnsureCreatedAsync();
 
+            await _userHelper.CheckRoleAsync("Admin");
+            await _userHelper.CheckRoleAsync("Customer");
+
             var user = await _userHelper.GetUserByEmailAsync("luispatricio.info@gmail.com");
             if (user == null) 
             {
@@ -35,11 +38,20 @@ namespace SuperShopCet97.Web.Data
                     UserName = "luispatricio.info@gmail.com",
                     PhoneNumber = "123456789"
                 };
+
                 var result = await _userHelper.AddUserAsync(user, "123456");
                 if (result != IdentityResult.Success) 
                 {
                     throw new InvalidOperationException("Could not create the user in seeder");
                 }
+
+                await _userHelper.AddUserToRoleAsync(user, "Admin");
+            }
+
+            var isInRole = await _userHelper.IsUserInRoleAsync(user, "Admin");
+            if (!isInRole) 
+            {
+                await _userHelper.AddUserToRoleAsync(user, "Admin");
             }
 
             if (!_context.Products.Any())
