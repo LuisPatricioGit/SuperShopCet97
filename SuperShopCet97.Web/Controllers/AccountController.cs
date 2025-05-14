@@ -168,5 +168,10 @@ namespace SuperShopCet97.Web.Controllers
             }
             return View(model);
         }
+
+        public IActionResult NotAuthorized()
+        {
+            return View();
+        }
     }
 }

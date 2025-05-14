@@ -45,13 +45,23 @@ namespace SuperShopCet97.Web
                 o.UseSqlServer(this.Configuration.GetConnectionString("OnlineConnection"));
             });
 
+            //Seeder
             services.AddTransient<SeedDb>();
+            
+            //Helpers
             services.AddScoped<IUserHelper, UserHelper>();
             services.AddScoped<IBlobHelper, BlobHelper>();
             services.AddScoped<IConverterHelper, ConverterHelper>();
 
-
+            //Repositories
             services.AddScoped<IProductRepository, ProductRepository>();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Account/NotAuthorized";
+                options.AccessDeniedPath = "/Account/NotAuthorized";
+            });
+
             services.AddControllersWithViews();
         }
 
@@ -68,6 +78,9 @@ namespace SuperShopCet97.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
