@@ -20,9 +20,11 @@ namespace SuperShopCet97.Web.Data.Entities
         public Guid ImageId { get; set; }
 
         [Display(Name = "Last Purchase")]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}", ApplyFormatInEditMode = false)]
         public DateTime? LastPurchase { get; set; }
 
         [Display(Name = "Last Sale")]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}", ApplyFormatInEditMode = false)]
         public DateTime? LastSale { get; set; }
 
         [Display(Name = "Is Available")]
