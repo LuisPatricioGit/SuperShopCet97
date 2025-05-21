@@ -16,10 +16,9 @@ namespace SuperShopCet97.Web.Data.Entities
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}", ApplyFormatInEditMode = false)]
         public DateTime OrderDate { get; set; }
 
-        [Required]
         [Display(Name = "Delivery Date")]
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}", ApplyFormatInEditMode = false)]
-        public DateTime DeliveryDate { get; set; }
+        public DateTime? DeliveryDate { get; set; }
 
         [Required]
         public User User { get; set; }
