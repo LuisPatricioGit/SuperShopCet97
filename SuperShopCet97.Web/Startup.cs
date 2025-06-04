@@ -42,7 +42,7 @@ namespace SuperShopCet97.Web
 
             services.AddDbContext<DataContext>(o =>
             {
-                o.UseSqlServer(this.Configuration.GetConnectionString("OnlineConnection"));
+                o.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"));
             });
 
             //Seeder
