@@ -1,5 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -18,12 +18,14 @@ namespace SuperShopCet97.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IUserHelper _userHelper;
+        private readonly IMailHelper _mailHelper;
         private readonly IConfiguration _configuration;
         private readonly ICountryRepository _countryRepository;
 
-        public AccountController(IUserHelper userHelper, IConfiguration configuration, ICountryRepository countryRepository)
+        public AccountController(IUserHelper userHelper, IMailHelper mailHelper, IConfiguration configuration, ICountryRepository countryRepository)
         {
             _userHelper = userHelper;
+            _mailHelper = mailHelper;
             _configuration = configuration;
             _countryRepository = countryRepository;
         }
@@ -32,7 +34,7 @@ namespace SuperShopCet97.Web.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index","Home");
+                return RedirectToAction("Index", "Home");
             }
             return View();
         }
@@ -43,13 +45,13 @@ namespace SuperShopCet97.Web.Controllers
             if (ModelState.IsValid)
             {
                 var result = await _userHelper.LoginAsync(model);
-                if ( result.Succeeded)
+                if (result.Succeeded)
                 {
                     if (this.Request.Query.Keys.Contains("ReturnUrl"))
                     {
                         return Redirect(this.Request.Query["ReturnUrl"].First());
                     }
-                    return this.RedirectToAction("Index","Home");
+                    return this.RedirectToAction("Index", "Home");
                 }
             }
             this.ModelState.AddModelError(string.Empty, "Failed to login");
@@ -79,7 +81,7 @@ namespace SuperShopCet97.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userHelper.GetUserByEmailAsync(model.Username);
-                if (user == null) 
+                if (user == null)
                 {
                     var city = await _countryRepository.GetCityAsync(model.CityId);
 
@@ -96,25 +98,29 @@ namespace SuperShopCet97.Web.Controllers
                     };
 
                     var result = await _userHelper.AddUserAsync(user, model.Password);
-                    if (result != IdentityResult.Success) 
+                    if (result != IdentityResult.Success)
                     {
                         ModelState.AddModelError(string.Empty, "The User couldn't be created.");
                         return View(model);
                     }
 
-                    await _userHelper.AddUserToRoleAsync(user, "Customer");
-
-                    var loginViewModel = new LoginViewModel
+                    string myToken = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                    string tokenLink = Url.Action("ConfirmEmail", "Account", new
                     {
-                        Username = model.Username,
-                        Password = model.Password,
-                        RememberMe = false,
-                    };
+                        userid = user.Id,
+                        token = myToken
+                    }, protocol: HttpContext.Request.Scheme);
 
-                    var result2 = await _userHelper.LoginAsync(loginViewModel);
-                    if (result2.Succeeded)  
+                    Response response = _mailHelper.SendEmail(model.Username, "Email confirmation", $"<h1>Email Confirmation</h1>" +
+                        $"To allow the user, " +
+                        $"plase click in this link:</br></br><a href = \"{tokenLink}\">Confirm Email</a>");
+
+                    if (response.IsSuccess)
                     {
-                        return RedirectToAction("Index", "Home");
+                        await _userHelper.AddUserToRoleAsync(user, "Customer");
+                        ViewBag.Message = "The instructions to allow you user has been sent to email";
+
+                        return View(model);
                     }
 
                     ModelState.AddModelError(string.Empty, "The user couldn't be logged.");
@@ -136,7 +142,7 @@ namespace SuperShopCet97.Web.Controllers
                 model.PhoneNumber = user.PhoneNumber;
 
                 var city = await _countryRepository.GetCityAsync(user.CityId);
-                if (city != null) 
+                if (city != null)
                 {
                     var country = await _countryRepository.GetCountryAsync(city);
                     if (country != null)
@@ -177,7 +183,7 @@ namespace SuperShopCet97.Web.Controllers
                     {
                         ViewBag.UserMessage = "User Updated!";
                     }
-                    else 
+                    else
                     {
                         ModelState.AddModelError(string.Empty, response.Errors.FirstOrDefault().Description);
                     }
@@ -215,6 +221,29 @@ namespace SuperShopCet97.Web.Controllers
                 }
             }
             return View(model);
+        }
+
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return NotFound();
+            }
+
+            var user = await _userHelper.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userHelper.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return NotFound();
+            }
+
+            return View();
+
         }
 
         public IActionResult NotAuthorized()
