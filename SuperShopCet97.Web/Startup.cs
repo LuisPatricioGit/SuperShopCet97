@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using SuperShopCet97.Web.Data;
 using SuperShopCet97.Web.Data.Entities;
 using SuperShopCet97.Web.Helpers;
+using Vereyon.Web;
 
 namespace SuperShopCet97.Web
 {
@@ -63,6 +64,9 @@ namespace SuperShopCet97.Web
             {
                 o.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            //Vereyon
+            services.AddFlashMessage();
 
             //Seeder
             services.AddTransient<SeedDb>();
